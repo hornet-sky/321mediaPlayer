@@ -8,7 +8,7 @@
     android:background="#000"
     tools:context=".component.SystemVideoPlayer">
 
-    <VideoView
+    <com.example.mobileplayer.component.VideoView
         android:id="@+id/videoView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
