@@ -2,6 +2,7 @@ package com.example.mobileplayer.component;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -263,11 +264,15 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
 
         if(mediaItems != null && !mediaItems.isEmpty()) {
             itemIndex = intent.getIntExtra("itemIndex", -1);
-            mVideoView.setVideoURI(mediaItems.get(itemIndex).getUri());
+            MediaItem mediaItem = mediaItems.get(itemIndex);
+            mVideoView.setVideoURI(mediaItem.getUri());
+            mVideoTitleTextView.setText(mediaItem.getName());
         }
         videoUri = intent.getData();
         if(videoUri != null) {
             mVideoView.setVideoURI(videoUri);
+            String fileName = getFileRealNameFromUri(videoUri);
+            mVideoTitleTextView.setText(fileName);
         }
         Log.w("myTag7", "initData[mediaItems=" + mediaItems + ", videoUri=" + videoUri + "]"); //initData[mediaItems=null, videoUri=content://com.android.providers.media.documents/document/video%3A145]
         refreshBottomControlBarBtnStatus();
@@ -562,6 +567,14 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mVideoView.setOnErrorListener(null);
         mVideoView.setOnCompletionListener(null);
         mVideoView = null;
+    }
+
+    private String getFileRealNameFromUri(Uri uri) {
+        if(uri == null) {
+            return "";
+        }
+        DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
+        return documentFile != null ? documentFile.getName() : "";
     }
 
     @Override

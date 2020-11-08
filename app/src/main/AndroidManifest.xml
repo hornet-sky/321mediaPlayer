@@ -56,6 +56,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter><!-- 通过浏览器能将播放器启动 -->
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="xhplayer" />
+            </intent-filter>
         </activity>
     </application>
 
