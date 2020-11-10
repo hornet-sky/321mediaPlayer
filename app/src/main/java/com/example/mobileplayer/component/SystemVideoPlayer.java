@@ -55,6 +55,10 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
     private Button mPauseOrStartBtn;
     private Button mNextBtn;
     private Button mScreenBtn;
+    private LinearLayout mSpeedCoverLayout;
+    private TextView mNetSpeedTextView;
+    private LinearLayout mMsgCoverLayout;
+    private TextView mMsgTextView;
 
     private int currentPosition;
 
@@ -161,12 +165,16 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 mVideoCurrentTimeTextView.setText(currentTime);
                 mediaPlayer.seekTo(currentPosition);
                 mediaPlayer.start();
+                mSpeedCoverLayout.setVisibility(View.GONE);
             }
         });
         mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                Log.e("myTag", "videoView.onError");
+                Log.e("myTag", "videoView.onError - " + i);
+                mSpeedCoverLayout.setVisibility(View.GONE);
+                mMsgTextView.setText("加载视频失败");
+                mMsgCoverLayout.setVisibility(View.VISIBLE);
                 return true;
             }
         });
@@ -177,6 +185,23 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 if(itemIndex < mediaItems.size() - 1) { //自动播放下一个视频
                     next();
                 }
+            }
+        });
+        mVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                switch (what) {
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                        Log.w("myTag", "MEDIA_INFO_BUFFERING_START");
+                        mSpeedCoverLayout.setVisibility(View.VISIBLE);
+                        break;
+                    case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                        Log.w("myTag", "MEDIA_INFO_BUFFERING_END");
+                        mSpeedCoverLayout.setVisibility(View.GONE);
+                        break;
+                    default:;
+                }
+                return false;
             }
         });
 
@@ -332,6 +357,10 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mPauseOrStartBtn = (Button) findViewById(R.id.pauseOrStartBtn);
         mNextBtn = (Button) findViewById(R.id.nextBtn);
         mScreenBtn = (Button) findViewById(R.id.screenBtn);
+        mSpeedCoverLayout = (LinearLayout) findViewById(R.id.speedCoverLayout);
+        mNetSpeedTextView = findViewById(R.id.netSpeedTextView);
+        mMsgCoverLayout = (LinearLayout) findViewById(R.id.msgCoverLayout);
+        mMsgTextView = findViewById(R.id.msgTextView);
     }
 
     @Override
@@ -378,7 +407,7 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         }
         ViewGroup.LayoutParams params = mVideoView.getLayoutParams();
         params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        params.width = ViewGroup.LayoutParams.MATCH_PARENT;
         mVideoView.setLayoutParams(params);
     }
 
@@ -539,6 +568,8 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mVideoView.pause();
         mVideoView.setVideoURI(mediaItems.get(--itemIndex).getUri());
         currentPosition = 0;
+        mMsgCoverLayout.setVisibility(View.GONE);
+        mSpeedCoverLayout.setVisibility(View.VISIBLE);
         refreshBottomControlBarBtnStatus();
     }
 
@@ -546,6 +577,8 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mVideoView.pause();
         mVideoView.setVideoURI(mediaItems.get(++itemIndex).getUri());
         currentPosition = 0;
+        mMsgCoverLayout.setVisibility(View.GONE);
+        mSpeedCoverLayout.setVisibility(View.VISIBLE);
         refreshBottomControlBarBtnStatus();
     }
 
