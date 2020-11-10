@@ -6,12 +6,23 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
+import com.example.mobileplayer.entity.MediaResult;
+import com.example.mobileplayer.invariable.Constants;
 import com.example.mobileplayer.entity.MediaItem;
+import com.example.mobileplayer.invariable.MediaType;
+
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public final class MediaUtils {
     private MediaUtils() {}
@@ -37,13 +48,58 @@ public final class MediaUtils {
                 name = cursor.getString(1);
                 duration = cursor.getLong(2);
                 size = cursor.getLong(3);
-                mediaItems.add(new MediaItem(name, uri, duration, size));
+                mediaItems.add(new MediaItem(name, uri, duration, size, MediaType.LOCAL_VIDEO));
             }
             cursor.close();
         }
         return mediaItems;
     }
 
+    public static void listNetVideos(int pageNo, int pageSize, String type, NetVideosLoadCallback callback) {
+        String url = Constants.NET_VIDEOS_API_URL;
+        RequestParams requestParams = new RequestParams(url);
+        requestParams.addQueryStringParameter("pageNo", pageNo);
+        requestParams.addQueryStringParameter("pageSize", pageSize);
+        requestParams.addQueryStringParameter("type", type);
+        if(callback != null) {
+            callback.beforeRequest();
+        }
+        x.http().get(requestParams, new Callback.PrepareCallback<String, List<MediaItem>>() {
+            @Override
+            public void onSuccess(List<MediaItem> result) {
+                for(MediaItem item : result) {
+                    item.setMediaType(MediaType.NET_VIDEO);
+                }
+                if(callback != null) {
+                    callback.onSuccess(result);
+                }
+            }
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                if(callback != null) {
+                    callback.onError(ex);
+                }
+            }
+            @Override
+            public void onCancelled(CancelledException cex) {
+                if(callback != null) {
+                    callback.onError(cex);
+                }
+            }
+            @Override
+            public void onFinished() {
+                if(callback != null) {
+                    callback.onFinished();
+                }
+            }
+            @Override
+            public List<MediaItem> prepare(String rawData) throws Throwable {
+                Log.w("myTag", "MediaUtils.listNetVideos.PrepareCallback.prepare[rawData=" + rawData + "]");
+                MediaResult mediaResult = JSON.parseObject(rawData, MediaResult.class);
+                return mediaResult.getTrailers();
+            }
+        });
+    }
     public static String formatDuration(long milliseconds) {
         int seconds = (int) (milliseconds / 1000);
         String standardTime;
@@ -57,5 +113,12 @@ public final class MediaUtils {
             standardTime = String.format(Locale.getDefault(), "%02d:%02d:%02d", seconds / 3600, seconds % 3600 / 60, seconds % 60);
         }
         return standardTime;
+    }
+
+    public static interface NetVideosLoadCallback {
+        void beforeRequest();
+        void onSuccess(List<MediaItem> items);
+        void onError(Throwable ex);
+        void onFinished();
     }
 }

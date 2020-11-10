@@ -38,9 +38,9 @@ public abstract class BaseFragment extends Fragment {
         initData();
     }
 
-    protected abstract void initData();
+    protected void initData() {}
 
-    protected abstract void initView(FrameLayout rootView);
+    protected void initView(FrameLayout rootView) {}
 
-    protected abstract int getLayout();
+    protected int getLayout() { return 0; }
 }

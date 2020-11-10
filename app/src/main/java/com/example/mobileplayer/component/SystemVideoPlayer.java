@@ -582,7 +582,8 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         Log.w("myTag6", "onDestroy");
         unregisterReceiver(this.batteryStatusBroadcastReceiver);
-        handler.removeCallbacks(task);
-        handler = null;
+        this.batteryStatusBroadcastReceiver = null;
+        this.handler.removeCallbacks(task);
+        this.handler = null;
     }
 }

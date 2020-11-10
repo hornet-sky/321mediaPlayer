@@ -3,10 +3,8 @@ package com.example.mobileplayer.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,22 +13,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.format.Formatter;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.mobileplayer.R;
 import com.example.mobileplayer.component.SystemVideoPlayer;
 import com.example.mobileplayer.entity.MediaItem;
 import com.example.mobileplayer.utils.MediaUtils;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -150,7 +143,7 @@ public class VideoFragment extends BaseFragment {
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
-            durationTextView = itemView.findViewById(R.id.durationTextView);
+            durationTextView = itemView.findViewById(R.id.titleTextView);
             sizeTextView = itemView.findViewById(R.id.sizeTextView);
         }
     }
