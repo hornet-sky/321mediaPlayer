@@ -87,6 +87,11 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                     mVideoController.setVisibility(View.GONE);
                 }
             }
+            // 缓冲
+            int max = mVideoProgressSeekBar.getMax();
+            if(mVideoProgressSeekBar.getSecondaryProgress() < max) {
+                mVideoProgressSeekBar.setSecondaryProgress(mVideoProgressSeekBar.getMax() * mVideoView.getBufferPercentage() / 100);
+            }
             handler.postDelayed(this, 1000);
         }
     };
@@ -105,8 +110,8 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         Log.w("myTag", "SystemVideoPlayer.onCreate");
         initView();
-        initData();
         initEvent();
+        initData();
         initBroadcastReceiver();
         handler.postDelayed(task, 0);
     }

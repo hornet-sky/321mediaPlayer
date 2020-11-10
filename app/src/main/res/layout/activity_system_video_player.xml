@@ -129,12 +129,12 @@
 
             <SeekBar
                 android:id="@+id/videoProgressSeekBar"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:maxHeight="6dp"
                 android:minHeight="6dp"
-                android:progress="20"
+                android:progress="0"
                 android:progressDrawable="@drawable/seekbar_layer_list"
                 android:thumb="@drawable/seekbar_thumb_anim" />
 
