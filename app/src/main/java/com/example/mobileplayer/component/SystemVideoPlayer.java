@@ -91,10 +91,14 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                     mVideoController.setVisibility(View.GONE);
                 }
             }
-            // 缓冲
+            // 视频缓冲
             int max = mVideoProgressSeekBar.getMax();
             if(mVideoProgressSeekBar.getSecondaryProgress() < max) {
                 mVideoProgressSeekBar.setSecondaryProgress(mVideoProgressSeekBar.getMax() * mVideoView.getBufferPercentage() / 100);
+            }
+            // 网速
+            if(mSpeedCoverLayout.getVisibility() == View.VISIBLE) {
+                mNetSpeedTextView.setText(MediaUtils.getNetSpeed(getApplicationContext()));
             }
             handler.postDelayed(this, 1000);
         }

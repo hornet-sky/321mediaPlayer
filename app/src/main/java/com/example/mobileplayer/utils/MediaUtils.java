@@ -4,9 +4,12 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.TrafficStats;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+
+import androidx.core.net.TrafficStatsCompat;
 
 import com.alibaba.fastjson.JSON;
 import com.example.mobileplayer.entity.MediaResult;
@@ -113,6 +116,29 @@ public final class MediaUtils {
             standardTime = String.format(Locale.getDefault(), "%02d:%02d:%02d", seconds / 3600, seconds % 3600 / 60, seconds % 60);
         }
         return standardTime;
+    }
+    private static long lastTimestamp = 0, lastTotalRxBytes = 0;
+    public static String getNetSpeed(Context context) {
+        long nowTimestamp = System.currentTimeMillis();
+        long nowTotalRxBytes = getTotalRxBytes(context.getApplicationInfo().uid);
+        long netSpeed = (nowTotalRxBytes - lastTotalRxBytes) * 1000 / (nowTimestamp - lastTimestamp);
+        String netSpeedDisplay = "0kb/s";
+        if(netSpeed < 1024) {
+            netSpeedDisplay = netSpeed + "b/s";
+        } else if(netSpeed < 1024 * 1024) {
+            netSpeedDisplay = netSpeed / 1024 + "kb/s";
+        } else if(netSpeed < 1024 * 1024 * 1024) {
+            netSpeedDisplay = netSpeed / 1024 / 1024 + "mb/s";
+        } else {
+            netSpeedDisplay = netSpeed / 1024 / 1024 / 1024 + "gb/s";
+        }
+        lastTimestamp = nowTimestamp;
+        lastTotalRxBytes = nowTotalRxBytes;
+        return netSpeedDisplay;
+    }
+
+    private static long getTotalRxBytes(int uid) {
+        return TrafficStats.getUidRxBytes(uid) == TrafficStats.UNSUPPORTED ? 0 : TrafficStats.getTotalRxBytes();
     }
 
     public static interface NetVideosLoadCallback {
