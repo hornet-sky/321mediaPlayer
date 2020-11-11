@@ -2,14 +2,17 @@ package com.example.mobileplayer.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson.JSON;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
@@ -37,6 +41,8 @@ import org.xutils.x;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 @ContentView(R.layout.fragment_net_video)
 public class NetVideoFragment extends BaseFragment {
@@ -79,16 +85,28 @@ public class NetVideoFragment extends BaseFragment {
             adapter.notifyItemRangeChanged(mediaItems.size() - items.size(), items.size());
             if(items.isEmpty()) {
                 loadMoreFooterView.setNoMoreData(true);
+            } else {
+                // 将视频列表信息往sp中放一份，这样在没网的环境中也能显示视频列表
+                saveNetVideoListToCache();
             }
             msgTextView.setVisibility(View.GONE);
         }
         @Override
         public void onError(Throwable ex) {
-            Log.e("myTag", "NetVideosLoadCallback.onError", ex);
+            Log.e("myTag", "NetVideosLoadCallback.onError" + ex.getMessage(), ex);
+            /*
             mediaItems.clear();
             adapter.notifyDataSetChanged();
             msgTextView.setText("加载网络数据失败");
             msgTextView.setVisibility(View.VISIBLE);
+             */
+            if(mediaItems.isEmpty()) {
+                mediaItems.addAll(getNetVideoListFromCache()); // 从缓存加载数据用于展示。
+                adapter.notifyDataSetChanged();
+            }
+            Toast toast = Toast.makeText(context, "加载网络数据失败", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
         }
         @Override
         public void onFinished() {
@@ -106,6 +124,23 @@ public class NetVideoFragment extends BaseFragment {
     public NetVideoFragment(Context context) {
         super(context);
         this.context = context;
+    }
+
+    public void saveNetVideoListToCache() {
+        new Thread() {
+            @Override
+            public void run() {
+                SharedPreferences sp = context.getSharedPreferences("info_cache", MODE_PRIVATE);
+                sp.edit().putString("net_video_list", JSON.toJSONString(mediaItems)).commit();
+            }
+        }.start();
+    }
+
+    public List<MediaItem> getNetVideoListFromCache() {
+        SharedPreferences sp = context.getSharedPreferences("info_cache", MODE_PRIVATE);
+        String videoListStr = sp.getString("net_video_list", "[]");
+        Log.w("myTag8", "getNetVideoListFromCache - " + videoListStr);
+        return JSON.parseArray(videoListStr, MediaItem.class);
     }
 
     @Nullable
