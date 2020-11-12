@@ -73,6 +73,16 @@ public final class MediaUtils {
                 for(MediaItem item : result) {
                     item.setMediaType(MediaType.NET_VIDEO);
                 }
+                // http://10.1.56.135:8080/hotel_california/%E5%8A%A0%E5%B7%9E%E6%97%85%E9%A6%86.rmvb
+                // 补充一个rmvb格式的视频
+                MediaItem item = new MediaItem();
+                item.setMediaType(MediaType.NET_VIDEO);
+                item.setCoverImg("http://img5.mtime.cn/mg/2019/06/21/175640.99146689_120X90X4.jpg");
+                item.setName("加州旅馆");
+                item.setTitle("加州旅馆再度归来");
+                item.setUri("http://10.1.56.111:8080/hotel_california/%E5%8A%A0%E5%B7%9E%E6%97%85%E9%A6%86.rmvb");
+                result.add(0, item);
+
                 if(callback != null) {
                     callback.onSuccess(result);
                 }

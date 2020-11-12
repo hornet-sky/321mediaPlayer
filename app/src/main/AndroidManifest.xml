@@ -3,8 +3,11 @@
     package="com.example.mobileplayer">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".MyApplication"
@@ -81,6 +84,144 @@
                 <data android:pathPattern=".*\\.mp4" />
             </intent-filter>
         </activity>
+        <activity android:name=".component.VitamioVideoPlayer"
+            android:label="@string/vitamio_video_player_intent_label"
+            android:theme="@style/Theme.Fullscreen"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|screenSize|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:scheme="ftp" />
+                <data android:scheme="rtsp" />
+                <data android:scheme="rtmp" />
+                <data android:scheme="mms" />
+                <data android:scheme="tcp" />
+                <data android:scheme="udp" />
+                <data android:scheme="gopher" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="application/sdp" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/x-mpegurl" />
+                <data android:mimeType="application/vnd.apple.mpegurl" />
+                <!-- <data android:mimeType="audio/*" /> -->
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:scheme="ftp" />
+                <data android:scheme="rtsp" />
+                <data android:scheme="rtmp" />
+                <data android:scheme="mms" />
+                <data android:scheme="tcp" />
+                <data android:scheme="udp" />
+                <data android:scheme="gopher" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.avi" />
+                <data android:pathPattern=".*\\.asf" />
+                <data android:pathPattern=".*\\.f4v" />
+                <data android:pathPattern=".*\\.flv" />
+                <data android:pathPattern=".*\\.mkv" />
+                <data android:pathPattern=".*\\.mpeg" />
+                <data android:pathPattern=".*\\.mpg" />
+                <data android:pathPattern=".*\\.mov" />
+                <data android:pathPattern=".*\\.rm" />
+                <data android:pathPattern=".*\\.vob" />
+                <data android:pathPattern=".*\\.wmv" />
+                <data android:pathPattern=".*\\.ts" />
+                <data android:pathPattern=".*\\.tp" />
+                <data android:pathPattern=".*\\.m3u" />
+                <data android:pathPattern=".*\\.m3u8" />
+                <data android:pathPattern=".*\\.m4v" />
+                <data android:pathPattern=".*\\.mp4" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".component.IVideoPlayer"
+            android:label="@string/ijk_player_intent_label"
+            android:theme="@style/Theme.Fullscreen"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|screenSize|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:scheme="ftp" />
+                <data android:scheme="rtsp" />
+                <data android:scheme="rtmp" />
+                <data android:scheme="mms" />
+                <data android:scheme="tcp" />
+                <data android:scheme="udp" />
+                <data android:scheme="gopher" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="application/sdp" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/x-mpegurl" />
+                <data android:mimeType="application/vnd.apple.mpegurl" />
+                <!-- <data android:mimeType="audio/*" /> -->
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:scheme="ftp" />
+                <data android:scheme="rtsp" />
+                <data android:scheme="rtmp" />
+                <data android:scheme="mms" />
+                <data android:scheme="tcp" />
+                <data android:scheme="udp" />
+                <data android:scheme="gopher" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.avi" />
+                <data android:pathPattern=".*\\.asf" />
+                <data android:pathPattern=".*\\.f4v" />
+                <data android:pathPattern=".*\\.flv" />
+                <data android:pathPattern=".*\\.mkv" />
+                <data android:pathPattern=".*\\.mpeg" />
+                <data android:pathPattern=".*\\.mpg" />
+                <data android:pathPattern=".*\\.mov" />
+                <data android:pathPattern=".*\\.rm" />
+                <data android:pathPattern=".*\\.vob" />
+                <data android:pathPattern=".*\\.wmv" />
+                <data android:pathPattern=".*\\.ts" />
+                <data android:pathPattern=".*\\.tp" />
+                <data android:pathPattern=".*\\.m3u" />
+                <data android:pathPattern=".*\\.m3u8" />
+                <data android:pathPattern=".*\\.m4v" />
+                <data android:pathPattern=".*\\.mp4" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="io.vov.vitamio.activity.InitActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"

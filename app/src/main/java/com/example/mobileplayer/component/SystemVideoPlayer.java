@@ -1,9 +1,11 @@
 package com.example.mobileplayer.component;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.documentfile.provider.DocumentFile;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -12,6 +14,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -19,6 +22,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -29,10 +34,13 @@ import com.example.mobileplayer.R;
 import com.example.mobileplayer.broadcastreceiver.BatteryStatusBroadcastReceiver;
 import com.example.mobileplayer.entity.MediaItem;
 import com.example.mobileplayer.utils.MediaUtils;
+import com.example.mobileplayer.utils.SystemUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import io.vov.vitamio.Vitamio;
 
 public class SystemVideoPlayer extends AppCompatActivity implements View.OnClickListener {
     private ConstraintLayout mVideoController;
@@ -110,16 +118,24 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
 
     private int screenWidth, screenHeight, videoWidth, videoHeight;
     private boolean isFullScreen;
-    private float startX;
+    private float startX, startY;
+    private boolean xLock, yLock;
     private int startPosition;
     private boolean videoStartStatusIsPlaying, isSlightShaking = true;
+
+    private String deviceBrand;
+    private int maxScreenBrightness, currentScreenBrightness, startScreenBrightness;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.w("myTag", "SystemVideoPlayer.onCreate");
         initView();
         initEvent();
-        initData();
+        try {
+            initData();
+        } catch (Settings.SettingNotFoundException e) {
+            Log.e("myTag", e.getMessage(), e);
+        }
         initBroadcastReceiver();
         handler.postDelayed(task, 0);
     }
@@ -170,15 +186,30 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 mediaPlayer.seekTo(currentPosition);
                 mediaPlayer.start();
                 mSpeedCoverLayout.setVisibility(View.GONE);
+
+                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                    @Override
+                    public void onSeekComplete(MediaPlayer mp) {
+                        // 记录拖动的位置，用于分析用户观看习惯
+                    }
+                });
             }
         });
         mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
-            public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                Log.e("myTag", "videoView.onError - " + i);
+            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+                Log.e("myTag", "videoView.onError - " + what + " - " + extra);
+                //1.播放的视频格式不支持--跳转到万能播放器继续播放
+                //2.播放网络视频的时候，网络中断---1.如果网络确实断了，可以提示用于网络断了；2.网络断断续续的，重新播放
+                //3.播放的时候本地文件中间有空白---下载做完成
+                // rmvb格式不支持  1（未知错误）  -2147483648（系统错误）
                 mSpeedCoverLayout.setVisibility(View.GONE);
+                /*
                 mMsgTextView.setText("加载视频失败");
                 mMsgCoverLayout.setVisibility(View.VISIBLE);
+                 */
+                switchVitamioVideoPlayer(); // Vitamio太古老，现在支持的不是很好了
+                // switchIjkVideoPlayer(); // bilibili万能播放器
                 return true;
             }
         });
@@ -194,6 +225,7 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
             @Override
             public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                Log.w("myTag", "onInfo - " + what + " - " + extra);
                 switch (what) {
                     case MediaPlayer.MEDIA_INFO_BUFFERING_START:
                         Log.w("myTag", "MEDIA_INFO_BUFFERING_START");
@@ -291,7 +323,18 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         });
     }
 
-    private void initData() {
+    private void initData() throws Settings.SettingNotFoundException {
+        deviceBrand = SystemUtils.getDeviceBrand();
+        if(deviceBrand != null) {
+            deviceBrand = deviceBrand.toLowerCase();
+        }
+        maxScreenBrightness = 255;
+        if("redmi".equals(deviceBrand) || "xiaomi".equals(deviceBrand)) { // 不同手机厂商的屏幕亮度值不同,因此需要适配
+            maxScreenBrightness = 2047;
+        }
+        currentScreenBrightness = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+        Log.w("myTag", "initData[maxScreenBrightness=" + maxScreenBrightness + ", currentSystemScreenBrightness=" + currentScreenBrightness + "]");
+
         df = new SimpleDateFormat("HH:mm:ss");
         Intent intent = getIntent();
         mediaItems = intent.getParcelableArrayListExtra("data");
@@ -308,7 +351,6 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
             String fileName = getFileRealNameFromUri(videoUri);
             mVideoTitleTextView.setText(fileName);
         }
-        Log.w("myTag7", "initData[mediaItems=" + mediaItems + ", videoUri=" + videoUri + "]"); //initData[mediaItems=null, videoUri=content://com.android.providers.media.documents/document/video%3A145]
         refreshBottomControlBarBtnStatus();
         // 获取屏幕宽度、高度，用于后续设置全屏模式
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -374,6 +416,7 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 voiceMuteToggle();
                 break;
             case R.id.infoBtn:
+                showCompatibilityInfo();
                 break;
             case R.id.exitBtn:
                 finish();
@@ -392,6 +435,37 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 break;
         }
         resetVideoControllerCountdown();
+    }
+
+    private void showCompatibilityInfo() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示信息")
+                .setMessage("当只有声音没有画面时，可以切换到万能播放器。\n现在是否切换到万能播放器？")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("切换", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switchVitamioVideoPlayer(); // Vitamio太古老，现在支持的不是很好了
+                        // switchIjkVideoPlayer(); // bilibili万能播放器
+                    }
+                })
+                .show();
+    }
+
+    private void switchVitamioVideoPlayer() {
+        Intent intent = getIntent();
+        intent.setClass(SystemVideoPlayer.this, VitamioVideoPlayer.class);
+        intent.putExtra("itemIndex", itemIndex);
+        startActivity(intent);
+        finish();
+    }
+
+    private void switchIjkVideoPlayer() {
+        Intent intent = getIntent();
+        intent.setClass(SystemVideoPlayer.this, IVideoPlayer.class);
+        intent.putExtra("itemIndex", itemIndex);
+        startActivity(intent);
+        finish();
     }
 
     private void fullScreenToggle() {
@@ -485,11 +559,34 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 videoStartStatusIsPlaying = mVideoView.isPlaying();
                 startPosition = currentPosition;
                 startX = event.getX();
+                startY = event.getY();
+                startScreenBrightness = currentScreenBrightness;
                 break;
             case MotionEvent.ACTION_MOVE:
-                float distance = event.getX() - startX;
-                isSlightShaking = Math.abs(distance) < 6;
-                if(!isSlightShaking) { // 防抖动
+                // 调节屏幕亮度
+                float distance = startY - event.getY();
+                isSlightShaking = Math.abs(distance) < 10;
+                Log.w("myTag9", "distance=" + distance);
+                if(!isSlightShaking && !yLock) { // 防抖动
+                    xLock = true; // 锁住X轴,只允许在Y轴滑动
+                    int offset = (int) (distance / (isFullScreen ? screenWidth : screenHeight / 2) * maxScreenBrightness);
+                    currentScreenBrightness = startScreenBrightness + offset;
+                    Log.w("myTag9", "offset=" + offset + ", startScreenBrightness=" + startScreenBrightness);
+                    if(currentScreenBrightness > maxScreenBrightness) {
+                        currentScreenBrightness = maxScreenBrightness;
+                    } else if(currentScreenBrightness < 0) {
+                        currentScreenBrightness = 0;
+                    }
+                    Window localWindow = getWindow();
+                    WindowManager.LayoutParams localLayoutParams = localWindow.getAttributes();
+                    localLayoutParams.screenBrightness = Float.valueOf(currentScreenBrightness) / maxScreenBrightness;
+                    localWindow.setAttributes(localLayoutParams);
+                }
+                // 调节视频进度
+                distance = event.getX() - startX;
+                isSlightShaking = Math.abs(distance) < 10;
+                if(!isSlightShaking && !xLock) { // 防抖动
+                    yLock = true; // 锁住Y轴,只允许在X轴滑动
                     if(videoStartStatusIsPlaying && mVideoView.isPlaying()) {
                         mVideoView.pause();
                     }
@@ -509,6 +606,8 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                 if(!gestureDetector.isLongpressEnabled()) { // 恢复“长按”
                     gestureDetector.setIsLongpressEnabled(true);
                 }
+                xLock = false;
+                yLock = false;
                 break;
         }
         return true;
@@ -571,6 +670,7 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
     private void prev() {
         mVideoView.pause();
         mVideoView.setVideoURI(mediaItems.get(--itemIndex).getUri());
+        mVideoTitleTextView.setText(mediaItems.get(itemIndex).getName());
         currentPosition = 0;
         mMsgCoverLayout.setVisibility(View.GONE);
         mSpeedCoverLayout.setVisibility(View.VISIBLE);
@@ -580,6 +680,7 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
     private void next() {
         mVideoView.pause();
         mVideoView.setVideoURI(mediaItems.get(++itemIndex).getUri());
+        mVideoTitleTextView.setText(mediaItems.get(itemIndex).getName());
         currentPosition = 0;
         mMsgCoverLayout.setVisibility(View.GONE);
         mSpeedCoverLayout.setVisibility(View.VISIBLE);
@@ -600,6 +701,14 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         this.mSystemTimeTextView.setText(df.format(new Date()));
     }
 
+    private String getFileRealNameFromUri(Uri uri) {
+        if(uri == null) {
+            return "";
+        }
+        DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
+        return documentFile != null ? documentFile.getName() : "";
+    }
+
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -609,14 +718,6 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
         mVideoView.setOnErrorListener(null);
         mVideoView.setOnCompletionListener(null);
         mVideoView = null;
-    }
-
-    private String getFileRealNameFromUri(Uri uri) {
-        if(uri == null) {
-            return "";
-        }
-        DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
-        return documentFile != null ? documentFile.getName() : "";
     }
 
     @Override
