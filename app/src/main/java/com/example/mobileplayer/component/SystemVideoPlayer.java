@@ -12,8 +12,11 @@ import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -572,10 +575,28 @@ public class SystemVideoPlayer extends AppCompatActivity implements View.OnClick
                     int offset = (int) (distance / (isFullScreen ? screenWidth : screenHeight / 2) * maxScreenBrightness);
                     currentScreenBrightness = startScreenBrightness + offset;
                     Log.w("myTag9", "offset=" + offset + ", startScreenBrightness=" + startScreenBrightness);
+                    Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                     if(currentScreenBrightness > maxScreenBrightness) {
                         currentScreenBrightness = maxScreenBrightness;
+                        VibrationEffect ve = null;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            ve = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
+                            vibrator.vibrate(ve);
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            // ve = VibrationEffect.createWaveform(new long[] {50, 1000, 2000, 3000}, 0); // 从下标0开始循环
+                            ve = VibrationEffect.createWaveform(new long[] {50, 1000, 2000, 3000}, -1);
+                            vibrator.vibrate(ve);
+                            // vibrator.cancel(); // 取消
+                        } else {
+                            vibrator.vibrate(new long[] {50, 1000, 2000, 3000}, -1); // -1表示不循环
+                        }
                     } else if(currentScreenBrightness < 0) {
                         currentScreenBrightness = 0;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            //VibrationEffect.EFFECT_TICK 适合按键反馈 比如输入密码等重要场景
+                            VibrationEffect ve = VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK); // 比CLICK轻，比TICK重
+                            vibrator.vibrate(ve);
+                        }
                     }
                     Window localWindow = getWindow();
                     WindowManager.LayoutParams localLayoutParams = localWindow.getAttributes();

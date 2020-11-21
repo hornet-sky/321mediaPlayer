@@ -1,0 +1,7 @@
+com.terry.AudioFx
+drawable icon
+id visualizerview
+layout main
+raw z8806c
+string app_name
+string hello

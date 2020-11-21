@@ -8,6 +8,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.example.mobileplayer.invariable.MediaType;
 
 public class MediaItem implements Parcelable {
+    private long id;
     @JSONField(name = "movieName")
     private String name;
     private Uri uri;
@@ -17,6 +18,10 @@ public class MediaItem implements Parcelable {
     private String coverImg;
     @JSONField(name = "videoTitle")
     private String title;
+    @JSONField(name = "videoTitle")
+    private String artist;
+    private String album; // 专辑名称
+    private long albumId; // 专辑ID，用于查询专辑封面图等信息
     private MediaType mediaType;
 
     public MediaItem(String name, Uri uri, long duration, long size, MediaType type) {
@@ -26,11 +31,23 @@ public class MediaItem implements Parcelable {
         this.size = size;
         this.mediaType = type;
     }
+    public MediaItem(long id, String name, Uri uri, long duration, long size, String artist, String album, long albumId, MediaType type) {
+        this.id = id;
+        this.name = name;
+        this.uri = uri;
+        this.duration = duration;
+        this.size = size;
+        this.artist = artist;
+        this.album = album;
+        this.albumId = albumId;
+        this.mediaType = type;
+    }
 
     public MediaItem() {
     }
 
     protected MediaItem(Parcel in) {
+        id = in.readLong();
         name = in.readString();
         uri = in.readParcelable(Uri.class.getClassLoader());
         duration = in.readLong();
@@ -41,6 +58,9 @@ public class MediaItem implements Parcelable {
         if(_type != null) {
             mediaType = MediaType.valueOf(_type);
         }
+        artist = in.readString();
+        album = in.readString();
+        albumId = in.readLong();
     }
 
     public static final Creator<MediaItem> CREATOR = new Creator<MediaItem>() {
@@ -54,6 +74,14 @@ public class MediaItem implements Parcelable {
             return new MediaItem[size];
         }
     };
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return title;
@@ -121,6 +149,30 @@ public class MediaItem implements Parcelable {
         this.size = size;
     }
 
+    public String getArtist() {
+        return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public long getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(long albumId) {
+        this.albumId = albumId;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -128,6 +180,7 @@ public class MediaItem implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
         dest.writeString(name);
         dest.writeParcelable(uri, flags);
         dest.writeLong(duration);
@@ -135,5 +188,8 @@ public class MediaItem implements Parcelable {
         dest.writeString(coverImg);
         dest.writeString(title);
         dest.writeString(mediaType != null ? mediaType.name() : null);
+        dest.writeString(artist);
+        dest.writeString(album);
+        dest.writeLong(albumId);
     }
 }

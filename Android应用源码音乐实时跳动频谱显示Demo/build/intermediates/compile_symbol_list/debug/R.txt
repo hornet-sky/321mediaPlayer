@@ -1,0 +1,6 @@
+int drawable icon 0x0
+int id visualizerview 0x0
+int layout main 0x0
+int raw z8806c 0x0
+int string app_name 0x0
+int string hello 0x0

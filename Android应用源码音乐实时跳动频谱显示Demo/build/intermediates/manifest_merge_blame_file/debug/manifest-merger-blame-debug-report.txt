@@ -1,0 +1,27 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.terry.AudioFx"
+4    android:versionCode="1"
+5    android:versionName="1.0" > <!-- <application -->
+6    <!-- android:label="@string/app_name" > -->
+7    <!-- <activity -->
+8    <!-- android:label="@string/app_name" -->
+9    <!-- android:name=".AudioFxActivity" > -->
+10    <!-- <intent-filter > -->
+11    <!-- <action android:name="android.intent.action.MAIN" /> -->
+12    <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+13    <!-- </intent-filter> -->
+14    <!-- </activity> -->
+15    <!-- </application> -->
+16    <uses-sdk
+16-->C:\Users\Wang\AndroidStudioProjects\MobilePlayer\Android应用源码音乐实时跳动频谱显示Demo\src\main\AndroidManifest.xml:20:5-44
+17        android:minSdkVersion="15"
+17-->C:\Users\Wang\AndroidStudioProjects\MobilePlayer\Android应用源码音乐实时跳动频谱显示Demo\src\main\AndroidManifest.xml:20:15-41
+18        android:targetSdkVersion="30" />
+18-->C:\Users\Wang\AndroidStudioProjects\MobilePlayer\Android应用源码音乐实时跳动频谱显示Demo\src\main\AndroidManifest.xml:20:5-44
+19
+20    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+20-->C:\Users\Wang\AndroidStudioProjects\MobilePlayer\Android应用源码音乐实时跳动频谱显示Demo\src\main\AndroidManifest.xml:22:5-88
+20-->C:\Users\Wang\AndroidStudioProjects\MobilePlayer\Android应用源码音乐实时跳动频谱显示Demo\src\main\AndroidManifest.xml:22:22-68
+21
+22</manifest>
