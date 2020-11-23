@@ -43,6 +43,7 @@ dependencies {
     implementation project(path: ':vitamio')
     implementation project(path: ':ijkplayer-java')
     implementation project(path: ':Android应用源码音乐实时跳动频谱显示Demo')
+    implementation files('libs\\Msc.jar')
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     implementation 'org.xutils:xutils:3.9.0'

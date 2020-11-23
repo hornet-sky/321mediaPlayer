@@ -19,6 +19,8 @@ import androidx.core.net.TrafficStatsCompat;
 import com.alibaba.fastjson.JSON;
 import com.example.mobileplayer.entity.Lyric;
 import com.example.mobileplayer.entity.MediaResult;
+import com.example.mobileplayer.entity.NewsItem;
+import com.example.mobileplayer.entity.NewsResult;
 import com.example.mobileplayer.invariable.Constants;
 import com.example.mobileplayer.entity.MediaItem;
 import com.example.mobileplayer.invariable.MediaType;
@@ -270,6 +272,52 @@ public final class MediaUtils {
             }
         });
     }
+
+    public static void listNews(int pageNo, int pageSize, String searchKey, NewsLoadCallback callback) {
+        String url = Constants.NEWS_SEARCH_API_URL;
+        RequestParams requestParams = new RequestParams(url);
+        // &page=1&pagesize=20&qtext=
+        requestParams.addQueryStringParameter("page", pageNo);
+        requestParams.addQueryStringParameter("pagesize", pageSize);
+        requestParams.addQueryStringParameter("qtext", searchKey);
+        if(callback != null) {
+            callback.beforeRequest();
+        }
+        x.http().get(requestParams, new Callback.PrepareCallback<String, List<NewsItem>>() {
+            @Override
+            public void onSuccess(List<NewsItem> result) {
+                if(callback != null) {
+                    callback.onSuccess(result);
+                }
+            }
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                if(callback != null) {
+                    callback.onError(ex);
+                }
+            }
+            @Override
+            public void onCancelled(CancelledException cex) {
+                if(callback != null) {
+                    callback.onError(cex);
+                }
+            }
+            @Override
+            public void onFinished() {
+                if(callback != null) {
+                    callback.onFinished();
+                }
+            }
+            @Override
+            public List<NewsItem> prepare(String rawData) throws Throwable {
+                Log.w("myTag", "MediaUtils.listNews.PrepareCallback.prepare[rawData=" + rawData + "]");
+                NewsResult result = JSON.parseObject(rawData, NewsResult.class);
+                List<NewsItem> newsItems = result.getList();
+                return newsItems == null ? Collections.emptyList() : newsItems;
+            }
+        });
+    }
+
     public static String formatDuration(long milliseconds) {
         int seconds = (int) (milliseconds / 1000);
         String standardTime;
@@ -380,6 +428,13 @@ public final class MediaUtils {
     public static interface NetVideosLoadCallback {
         void beforeRequest();
         void onSuccess(List<MediaItem> items);
+        void onError(Throwable ex);
+        void onFinished();
+    }
+
+    public static interface NewsLoadCallback {
+        void beforeRequest();
+        void onSuccess(List<NewsItem> items);
         void onError(Throwable ex);
         void onFinished();
     }
